@@ -49,7 +49,6 @@ resource "aws_security_group" "web-server-sg" {
 resource "aws_instance" "web-server-terraform" {
   ami           = "ami-00b23d395f228131f"
   instance_type = "t2.micro"
-  # security_groups = [aws_security_group.web-server-sg.arn]
 
   tags = {
     Name = "web-server-terraform"
@@ -59,7 +58,19 @@ resource "aws_instance" "web-server-terraform" {
 
 }
 
-resource "aws_network_interface_sg_attachment" "sg_attachment" {
+resource "aws_eip" "web-server-eip" {
+  vpc = false
+  tags = {
+    "Name" = "webServerEIP"
+  }
+}
+
+resource "aws_eip_association" "eip-association" {
+  instance_id   = aws_instance.web-server-terraform.id
+  allocation_id = aws_eip.web-server-eip.id
+}
+
+resource "aws_network_interface_sg_attachment" "sg-attachment" {
   security_group_id    = aws_security_group.web-server-sg.id
   network_interface_id = aws_instance.web-server-terraform.primary_network_interface_id
 }
